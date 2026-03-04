@@ -198,7 +198,8 @@ ggplot(data = lynx_absent, aes(x = Microhabitat, y = Seeds_predated_total, fill 
   labs(x = "Microhabitat",
        y = "Total Number of Seeds Predated",
        title = "No Lynx Present") +
-  ylim(0, 100)
+  ylim(0, 100) +
+  theme_classic()
 ```
 
 ```{r}
@@ -209,12 +210,28 @@ ggplot(data = lynx_present, aes(x = Microhabitat, y = Seeds_predated_total, fill
   labs(x = "Microhabitat",
        y = "Total Number of Seeds Predated",
        title = "Lynx Present") + 
-  ylim(0, 100)
+  ylim(0, 100) + 
+  theme_classic()
+```
+
+```{r}
+seed_predation_separated %>%
+
+ggplot(aes(x = Lynx, y = Seeds_predated_total, color = Lynx)) +
+  geom_jitter(width = 0.1) +
+  # labs(x = "Microhabitat",
+  #      y = "Total Number of Seeds Predated",
+  #      title = "Lynx Present") +
+  facet_grid(Habitat ~ Microhabitat) +
+  theme_bw() 
 ```
 
 ## Model
 
 ```{r}
+seed_predation_separated %>% 
+  count(Lynx, Habitat, Microhabitat, Plot)
+
 # number of seeds predated ~ Microhabitat + Lynx Presence
 m.seeds.microhabitat.lynx <-
 brm(data = seed_predation_separated, # Give the model the data
