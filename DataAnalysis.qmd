@@ -108,7 +108,8 @@ g1 <- ggplot(data = lynx_open, aes(x = Habitat, y = Seeds_predated_total, fill =
   geom_col() +
   labs(x = "Habitat",
        y = "Total Number of Seeds Predated",
-       title = "Lynx Present")
+       title = "Lynx Present") + 
+  ylim(0, 50)
 ```
 
 ```{r}
@@ -119,7 +120,8 @@ g2 <- ggplot(data = lynx_rock, aes(x = Habitat, y = Seeds_predated_total, fill =
   geom_col() + 
   labs(x = "Habitat",
        y = "Total Number of Seeds Predated",
-       title = "Lynx Present")
+       title = "Lynx Present") + 
+  ylim(0, 50)
 ```
 
 ```{r}
@@ -130,7 +132,8 @@ g3 <- ggplot(data = lynx_shrub, aes(x = Habitat, y = Seeds_predated_total, fill 
   geom_col() + 
   labs(x = "Habitat",
        y = "Total Number of Seeds Predated",
-       title = "Lynx Present")
+       title = "Lynx Present") + 
+  ylim(0, 50)
 ```
 
 ```{r}
@@ -141,7 +144,8 @@ g4 <- ggplot(data = lynx_open, aes(x = Habitat, y = Seeds_predated_total, fill =
   geom_col() + 
   labs(x = "Habitat",
        y = "Total Number of Seeds Predated",
-       title = "No Lynx Present")
+       title = "No Lynx Present") + 
+  ylim(0, 50)
 ```
 
 ```{r}
@@ -152,7 +156,8 @@ g5 <- ggplot(data = noLynx_rock, aes(x = Habitat, y = Seeds_predated_total, fill
   geom_col() + 
   labs(x = "Habitat",
        y = "Total Number of Seeds Predated",
-       title = "No Lynx Present")
+       title = "No Lynx Present") + 
+  ylim(0, 50)
 ```
 
 ```{r}
@@ -163,7 +168,8 @@ g6 <- ggplot(data = noLynx_shrub, aes(x = Habitat, y = Seeds_predated_total, fil
   geom_col() + 
   labs(x = "Habitat",
        y = "Total Number of Seeds Predated",
-       title = "No Lynx Present")
+       title = "No Lynx Present") + 
+  ylim(0, 50)
 ```
 
 ```{r}
@@ -184,27 +190,49 @@ g6 <- ggplot(data = noLynx_shrub, aes(x = Habitat, y = Seeds_predated_total, fil
   title = 'Microhabitat: Shrub')
 ```
 
+```{r}
+lynx_absent <- filter(seed_predation_separated, Lynx == "0")
+
+ggplot(data = lynx_absent, aes(x = Microhabitat, y = Seeds_predated_total, fill = Microhabitat)) +
+  geom_col() + 
+  labs(x = "Microhabitat",
+       y = "Total Number of Seeds Predated",
+       title = "No Lynx Present") +
+  ylim(0, 100)
+```
+
+```{r}
+lynx_present <- filter(seed_predation_separated, Lynx == "1")
+
+ggplot(data = lynx_present, aes(x = Microhabitat, y = Seeds_predated_total, fill = Microhabitat)) +
+  geom_col() + 
+  labs(x = "Microhabitat",
+       y = "Total Number of Seeds Predated",
+       title = "Lynx Present") + 
+  ylim(0, 100)
+```
+
 ## Model
 
 ```{r}
-# number of seeds predated ~ Microhabitat
-m.seeds.habitat.microhabitat.lynx <-
-brm(data = seed_predation_separated, # Give the model the gala data
+# number of seeds predated ~ Microhabitat + Lynx Presence
+m.seeds.microhabitat.lynx <-
+brm(data = seed_predation_separated, # Give the model the data
 # Choose a poisson distribution - THIS IS THE NEW PART!
 family = poisson(link = "log"),
 # Specify the model here.
-Seeds_predated_total ~ 1 + Habitat + Microhabitat + Lynx,
+Seeds_predated_total ~ 1 + Microhabitat + Lynx,
 # Here's where you specify parameters for executing the Markov chains
 # We're using similar to the defaults, except we set cores to 4 so the analysis runs fa
 iter = 2000, warmup = 1000, chains = 4, cores = 4,
 # Save the fitted model object as output - helpful for reloading in the output later
-file = "output/m.seeds.habitat.microhabitat.lynx")
+file = "output/m.seeds.microhabitat.lynx")
 ```
 
 ```{r}
-summary(m.seeds.habitat.microhabitat.lynx)
+summary(m.seeds.microhabitat.lynx)
 ```
 
 ```{r}
-plot(m.seeds.habitat.microhabitat.lynx)
+plot(m.seeds.microhabitat.lynx)
 ```
