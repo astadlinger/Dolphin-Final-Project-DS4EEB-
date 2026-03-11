@@ -232,6 +232,27 @@ ggplot(aes(x = Lynx, y = Seeds_predated_total, color = Lynx)) +
   theme_bw() 
 ```
 
+```{r}
+summary_stats <- seed_predation_separated %>%
+  group_by(Lynx, Habitat, Microhabitat) %>% 
+  summarise(
+   mean_seeds = mean(Seeds_predated_total, na.rm = TRUE),
+    n = sum(!is.na(Seeds_predated_total)),
+    sd_seeds = sd(Seeds_predated_total, na.rm = TRUE),
+    se_seeds = sd_seeds / sqrt(n),
+    ci_lower = mean_seeds - qt(0.975, df = n - 1) * se_seeds,
+    ci_upper = mean_seeds + qt(0.975, df = n - 1) * se_seeds
+  ) %>%
+  ungroup()
+
+ggplot(summary_stats, aes(x = Lynx, y = mean_seeds, color = Lynx)) +
+  geom_point(size = 3) +  # Average points
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.2) +  # 95% CI error bars
+  facet_grid(Habitat ~ Microhabitat) +
+  labs(x = "Lynx Presence", y = "Average Number of Seeds Predated", title = "Seed Predation Rates as a Function of Lynx Presence and Micro/Macro habitat") +
+  scale_color_manual(values = c("Present" = "goldenrod", "Absent" = "coral"))
+```
+
 ## *Model*
 
 ```{r}
