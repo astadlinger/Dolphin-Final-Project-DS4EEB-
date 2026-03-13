@@ -1,11 +1,11 @@
 ---
-title: "DataAnalysis"
+title: "Data Exploration"
 author: Elizabeth Orozco & Alex Stadlinger
 format: pdf
 editor: visual
 ---
 
-## *Load in packages and unzip files*
+# *Load in Packages*
 
 ```{r}
 #load in required packages
@@ -17,39 +17,46 @@ library(brms)
 library(ggeffects)
 ```
 
+# Unzip and Read in Files
+
+## Unzip
+
 ```{r}
 #unzip rodent activity file
 # unzip("edi.2200.1.zip")
 ```
 
-## *Read in required files*
+## *Read in files*
 
 ```{r}
 #read in rodent activity file
-rodent_data <- read.csv("Rodent_activity.csv")
+rodent_data <- read.csv("data/Rodent_activity.csv")
 ```
 
 ```{r}
 #read in trapping data file
-trapping_data <- read.csv("Trapping.csv")
+trapping_data <- read.csv("data/Trapping.csv")
 ```
 
 ```{r}
 #read in vegetation cover data file
-vegetation_data <- read.csv("Vegetation_cover.csv")
+vegetation_data <- read.csv("data/Vegetation_cover.csv")
 ```
 
 ```{r}
 #read in seed predation data
-seed_predation_data <- read.csv("Seed_predation.csv")
+seed_predation_data <- read.csv("data/Seed_predation.csv")
 ```
 
-## *Clean up files*
+# *Data Wrangling*
+
+## Separate 
 
 ```{r}
 #separate data in trapping_data
-colnames(trapping_data)
+colnames(trapping_data) #obtain column names to know what to call new columns
 
+#use separate to separate on '.'
 trapping_separated <- trapping_data %>%
   separate(col = Trap_day.Lynx.Habitat.Plot.Trap.Species.Working, 
            into = c("Trap_day", "Lynx", "Habitat", "Plot", "Trap", "Species", "Working"), 
@@ -76,9 +83,11 @@ seed_predation_separated <- seed_predation_data %>%
            sep = ";")
 ```
 
+## As.Numeric
+
 ```{r}
-#make seed predated total column numeric
-seed_predation_separated$Seeds_predated_total <- as.numeric(seed_predation_separated$Seeds_predated_total)
+#make total seeds predated column and seeds left 0 column numeric
+#Seeds_left0 is used as total seeds left out at the beginning (8 seeds)
 
 seed_predation_separated <- seed_predation_separated %>% 
   mutate(Seeds_predated_total = as.numeric(Seeds_predated_total),
@@ -86,28 +95,40 @@ seed_predation_separated <- seed_predation_separated %>%
 
 ```
 
-## *Graphs!*
+# *Graphs!*
+
+## 3 Simple Bar Graphs
 
 ```{r}
-#plotting seed predation total against lynx presence
+#plotting seed predation total as a function of lynx presence
 ggplot(data = seed_predation_separated, aes(x = Lynx, y = Seeds_predated_total)) +
   geom_col()
+
+ggsave("output/SeedPredationLynxPresence.png") #save to output folder
 ```
 
 ```{r}
-#plotting seed predation total as a function of habitat type
+#plotting seed predation total as a function of macrohabitat type
 ggplot(data = seed_predation_separated, aes(x = Habitat, y = Seeds_predated_total)) +
   geom_col()
+
+ggsave("output/SeedPredationMacrohabitat.png")
 ```
 
 ```{r}
-#plotting seed predation total as a function of microhabitat
+#plotting seed predation total as a function of microhabitat type
 ggplot(data = seed_predation_separated, aes(x = Microhabitat, y = Seeds_predated_total)) +
   geom_col()
+
+ggsave("output/SeedPredationMicrohabitat.png")
 ```
+
+## 6 Bar Graphs with All Variables
 
 ```{r}
 #graph 1: lynx = 1, microhabitat = open
+
+#make new data frame with just rows where lynx is present AND microhabitat is open
 lynx_open <- filter(seed_predation_separated, Lynx == "1", Microhabitat == "Open")
 
 g1 <- ggplot(data = lynx_open, aes(x = Habitat, y = Seeds_predated_total, fill = Habitat)) + 
@@ -120,6 +141,8 @@ g1 <- ggplot(data = lynx_open, aes(x = Habitat, y = Seeds_predated_total, fill =
 
 ```{r}
 #graph 2: lynx = 1, microhabitat = rock
+
+#make new data frame with just rows where lynx is present AND microhabitat is rock
 lynx_rock <- filter(seed_predation_separated, Lynx == "1", Microhabitat == "Rock")
 
 g2 <- ggplot(data = lynx_rock, aes(x = Habitat, y = Seeds_predated_total, fill = Habitat)) +
@@ -132,6 +155,8 @@ g2 <- ggplot(data = lynx_rock, aes(x = Habitat, y = Seeds_predated_total, fill =
 
 ```{r}
 #graph 3: lynx = 1, microhabitat = shrub
+
+#make new data frame with just rows where lynx is present AND microhabitat is shrub
 lynx_shrub <- filter(seed_predation_separated, Lynx == "1", Microhabitat == "Shrub")
 
 g3 <- ggplot(data = lynx_shrub, aes(x = Habitat, y = Seeds_predated_total, fill = Habitat)) +
@@ -144,6 +169,8 @@ g3 <- ggplot(data = lynx_shrub, aes(x = Habitat, y = Seeds_predated_total, fill 
 
 ```{r}
 #graph 4: lynx = 0, microhabitat = open
+
+#make new data frame with just rows where lynx is not present AND microhabitat is open
 noLynx_open <- filter(seed_predation_separated, Lynx == "0", Microhabitat == "Open")
 
 g4 <- ggplot(data = lynx_open, aes(x = Habitat, y = Seeds_predated_total, fill = Habitat)) +
@@ -156,6 +183,8 @@ g4 <- ggplot(data = lynx_open, aes(x = Habitat, y = Seeds_predated_total, fill =
 
 ```{r}
 #graph 5: lynx = 0, microhabitat = rock
+
+#make new data frame with just rows where lynx is not present AND microhabitat is rock
 noLynx_rock <- filter(seed_predation_separated, Lynx == "0", Microhabitat == "Rock")
 
 g5 <- ggplot(data = noLynx_rock, aes(x = Habitat, y = Seeds_predated_total, fill = Habitat)) +
@@ -168,6 +197,8 @@ g5 <- ggplot(data = noLynx_rock, aes(x = Habitat, y = Seeds_predated_total, fill
 
 ```{r}
 #graph 6: lynx = 0, microhabitat = shrub
+
+#make new data frame with just rows where lynx is not present AND microhabitat is shrub
 noLynx_shrub <- filter(seed_predation_separated, Lynx == "0", Microhabitat == "Shrub")
 
 g6 <- ggplot(data = noLynx_shrub, aes(x = Habitat, y = Seeds_predated_total, fill = Habitat)) +
@@ -179,26 +210,36 @@ g6 <- ggplot(data = noLynx_shrub, aes(x = Habitat, y = Seeds_predated_total, fil
 ```
 
 ```{r}
-#open
+#put the two graphs with the open microhabitat type together
 (g1 + g4) + plot_annotation(
   title = 'Microhabitat: Open')
+
+ggsave("output/SeedPredationLynxPresenceMacrohabitatMicrohabitatOpen.png")
 ```
 
 ```{r}
-#rock
+##put the two graphs with the rock microhabitat type together
 (g2 + g5) + plot_annotation(
   title = 'Microhabitat: Rock')
+
+ggsave("output/SeedPredationLynxPresenceMacrohabitatMicrohabitatRock.png")
 ```
 
 ```{r}
-#shrub
+#put the two graphs with the shrub microhabitat type together
 (g3 + g6) + plot_annotation(
   title = 'Microhabitat: Shrub')
+
+ggsave("output/SeedPredationLynxPresenceMacrohabitatMicrohabitatShrub.png")
 ```
 
+## 2 Bar Graphs of Seeds Predated Against Microhabitat Type
+
 ```{r}
+#create a new data frame where all rows have no lynx present
 lynx_absent <- filter(seed_predation_separated, Lynx == "0")
 
+#graph seeds predated as a function of microhabitat type
 ggplot(data = lynx_absent, aes(x = Microhabitat, y = Seeds_predated_total, fill = Microhabitat)) +
   geom_col() + 
   labs(x = "Microhabitat",
@@ -206,11 +247,15 @@ ggplot(data = lynx_absent, aes(x = Microhabitat, y = Seeds_predated_total, fill 
        title = "No Lynx Present") +
   ylim(0, 100) +
   theme_classic()
+
+ggsave("output/SeedPredationNoLynxMicrohabitat.png")
 ```
 
 ```{r}
+#create a new data frame where all rows have lynx present
 lynx_present <- filter(seed_predation_separated, Lynx == "1")
 
+#graph seeds predated as a function of microhabitat type
 ggplot(data = lynx_present, aes(x = Microhabitat, y = Seeds_predated_total, fill = Microhabitat)) +
   geom_col() + 
   labs(x = "Microhabitat",
@@ -218,11 +263,16 @@ ggplot(data = lynx_present, aes(x = Microhabitat, y = Seeds_predated_total, fill
        title = "Lynx Present") + 
   ylim(0, 100) + 
   theme_classic()
+
+ggsave("output/SeedPredationLynxPresentMicrohabitat.png")
 ```
 
-```{r}
-seed_predation_separated %>%
+## Jitter Plot with all 4 Variables Represented 
 
+```{r}
+#Graph seeds predated in 6 panels representing the different combinations of experimental conditions. Each panel has lynx/no lynx and combines all 6 combinations of macro- and microhabitat.
+
+seed_predation_separated %>%
 ggplot(aes(x = Lynx, y = Seeds_predated_total, color = Lynx)) +
   geom_jitter(width = 0.1) +
   # labs(x = "Microhabitat",
@@ -230,7 +280,11 @@ ggplot(aes(x = Lynx, y = Seeds_predated_total, color = Lynx)) +
   #      title = "Lynx Present") +
   facet_grid(Habitat ~ Microhabitat) +
   theme_bw() 
+
+ggsave("output/SeedPredationLynxMacrohabitatMicrohabitat.png")
 ```
+
+## Final Visualization
 
 ```{r}
 summary_stats <- seed_predation_separated %>%
@@ -251,58 +305,69 @@ ggplot(summary_stats, aes(x = Lynx, y = mean_seeds, color = Lynx)) +
   facet_grid(Habitat ~ Microhabitat) +
   labs(x = "Lynx Presence", y = "Average Number of Seeds Predated", title = "Seed Predation Rates as a Function of Lynx Presence and Micro/Macro habitat") +
   scale_color_manual(values = c("Present" = "goldenrod", "Absent" = "coral"))
+
+ggsave("output/FinalVisualization.png")
 ```
 
-## *Model*
+# *Models*
+
+## Additive Model
 
 ```{r}
+#Count the number of trials for each combination of experimental variables (just to see how many trials at each plot)
 seed_predation_separated %>% 
   count(Lynx, Habitat, Microhabitat, Plot)
 
-# number of seeds predated ~ Microhabitat + Lynx Presence
+#Run an addtive model of number of seeds predated ~ Microhabitat + Lynx Presence
 m.seeds.habitat.microhabitat.lynx <-
 brm(data = seed_predation_separated, # Give the model the data
-# Choose a poisson distribution - THIS IS THE NEW PART!
+# Choose a binomial distribution --> There is a set number (8 seeds) and it is success vs. failure
 family = binomial(link = "logit"),
 # Specify the model here.
 Seeds_predated_total | trials(Seeds_left0) ~ 1 + Habitat + Microhabitat + Lynx + (1|Plot),
-# Here's where you specify parameters for executing the Markov chains
-# We're using similar to the defaults, except we set cores to 4 so the analysis runs fa
+# Specify parameters for executing the Markov chains
 iter = 2000, warmup = 1000, chains = 4, cores = 4,
-# Save the fitted model object as output - helpful for reloading in the output later
+# Save the model in output folder
 file = "output/m.seeds.habitat.microhabitat.lynx")
 ```
 
 ```{r}
+#get summary of the additive model
 summary(m.seeds.habitat.microhabitat.lynx)
 ```
 
 ```{r}
+#check that model ran correctly
 plot(m.seeds.habitat.microhabitat.lynx)
 ```
 
+## Interactive Model
+
 ```{r}
-# number of seeds predated ~ Microhabitat + Lynx Presence
+# Run an interactive model of number of seeds predated ~ Microhabitat + Lynx Presence
 m.seeds.habitat.microhabitat.lynx.int <-
 brm(data = seed_predation_separated, # Give the model the data
-# Choose a poisson distribution - THIS IS THE NEW PART!
 family = binomial(link = "logit"),
 # Specify the model here.
 Seeds_predated_total | trials(Seeds_left0) ~ 0 + Habitat + Lynx*Microhabitat + (1|Plot),
-# Here's where you specify parameters for executing the Markov chains
-# We're using similar to the defaults, except we set cores to 4 so the analysis runs fa
+# Specify parameters for executing the Markov chains
 iter = 2000, warmup = 1000, chains = 4, cores = 4,
-# Save the fitted model object as output - helpful for reloading in the output later
 file = "output/m.seeds.habitat.microhabitat.lynx.int")
 ```
 
 ```{r}
+#get summary of the interactive model
 summary(m.seeds.habitat.microhabitat.lynx.int)
 ```
 
-## Model Summary
+```{r}
+#check that model ran correctly
+plot(m.seeds.habitat.microhabitat.lynx.int)
+```
 
-### Additive Model:
+# Model Summary
+
+## Additive Model:
 
 Intercept = Forest Habitat, Open Microhabitat, No Lynx
 
@@ -315,14 +380,16 @@ Shrub Microhabitat: 2.19 increase in seeds predated compared to open (reasonably
 Lynx Present: 0.92 increase in seeds predated compared to lynx absent (not reasonably different from 0)
 
 ```{r}
+#check PSIS value
 loo(m.seeds.habitat.microhabitat.lynx)
 ```
 
 ```{r}
+#check WAIC value
 waic(m.seeds.habitat.microhabitat.lynx)
 ```
 
-### Interactive Model:
+## Interactive Model:
 
 Difference from 0
 
@@ -333,20 +400,23 @@ In rock microhabitat, presence of lynx is not reasonably different from 0. This 
 In shrub microhabitat, presence of lynx is not reasonably different from 0. This means that presence or absence of lynx does not significantly alter seed predation success in shrub microhabitat. Approaching on 0, so there is more of a difference between predator presence or absence than in rock microhabitat.
 
 ```{r}
+#check PSIS value
 loo(m.seeds.habitat.microhabitat.lynx.int)
 ```
 
 ```{r}
+#check WAIC value
 waic(m.seeds.habitat.microhabitat.lynx.int)
 ```
 
-### Predictive Plot
+# Predictive Plots
 
 ```{r}
+# run a predictive plot to see help evaluate model correctness
 pred.add <- predict_response(m.seeds.habitat.microhabitat.lynx, condition = c(Seeds_left0 = 8))
 plot(pred)
 ```
 
-### Compare Models
+# Compare Models
 
 The additive model is better because it has lower PSIS (731.7) and WAIC (719.9) values compared to the interactive model's PSIS (751.6) and WAIC (739.3) values.
