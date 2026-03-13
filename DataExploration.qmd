@@ -50,7 +50,7 @@ seed_predation_data <- read.csv("data/Seed_predation.csv")
 
 # Data Wrangling
 
-## Separate 
+## Separate
 
 ```{r}
 #separate data in trapping_data
@@ -267,7 +267,7 @@ ggplot(data = lynx_present, aes(x = Microhabitat, y = Seeds_predated_total, fill
 ggsave("output/SeedPredationLynxPresentMicrohabitat.png")
 ```
 
-## Jitter Plot with all 4 Variables Represented 
+## Jitter Plot with all 4 Variables Represented
 
 ```{r}
 #Graph seeds predated in 6 panels representing the different combinations of experimental conditions. Each panel has lynx/no lynx and combines all 6 combinations of macro- and microhabitat.
@@ -324,7 +324,7 @@ brm(data = seed_predation_separated, # Give the model the data
 # Choose a binomial distribution --> There is a set number (8 seeds) and it is success vs. failure
 family = binomial(link = "logit"),
 # Specify the model here.
-Seeds_predated_total | trials(Seeds_left0) ~ 1 + Habitat + Microhabitat + Lynx + (1|Plot),
+Seeds_predated_total | trials(Seeds_left0) ~ 1 + Habitat + Microhabitat + Lynx + (1|Plot), #this last part accounts for natural variation in plots
 # Specify parameters for executing the Markov chains
 iter = 2000, warmup = 1000, chains = 4, cores = 4,
 # Save the model in output folder
