@@ -9,12 +9,11 @@ editor: visual
 
 ```{r}
 #load in required packages
-# library(tidyr)
-# library(dplyr)
-# library(ggplot2)
-# library(patchwork)
-# library(brms)
-# library(ggeffects)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(brms)
+library(ggeffects)
 ```
 
 # Read in File
