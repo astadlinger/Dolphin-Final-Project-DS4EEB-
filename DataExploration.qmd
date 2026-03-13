@@ -5,7 +5,7 @@ format: pdf
 editor: visual
 ---
 
-# *Load in Packages*
+# Load in Packages
 
 ```{r}
 #load in required packages
@@ -26,7 +26,7 @@ library(ggeffects)
 # unzip("edi.2200.1.zip")
 ```
 
-## *Read in files*
+## Read in files
 
 ```{r}
 #read in rodent activity file
@@ -48,7 +48,7 @@ vegetation_data <- read.csv("data/Vegetation_cover.csv")
 seed_predation_data <- read.csv("data/Seed_predation.csv")
 ```
 
-# *Data Wrangling*
+# Data Wrangling
 
 ## Separate 
 
@@ -95,7 +95,7 @@ seed_predation_separated <- seed_predation_separated %>%
 
 ```
 
-# *Graphs!*
+# Graphs!
 
 ## 3 Simple Bar Graphs
 
@@ -309,7 +309,7 @@ ggplot(summary_stats, aes(x = Lynx, y = mean_seeds, color = Lynx)) +
 ggsave("output/FinalVisualization.png")
 ```
 
-# *Models*
+# Models
 
 ## Additive Model
 

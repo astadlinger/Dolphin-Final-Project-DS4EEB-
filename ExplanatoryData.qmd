@@ -1,0 +1,157 @@
+---
+title: "Explanatory Data"
+author: "Elizabeth Orozco & Alex Stadlinger"
+format: pdf
+editor: visual
+---
+
+# Load in Packages
+
+```{r}
+#load in required packages
+# library(tidyr)
+# library(dplyr)
+# library(ggplot2)
+# library(patchwork)
+# library(brms)
+# library(ggeffects)
+```
+
+# Read in File
+
+```{r}
+#read in seed predation data
+seed_predation_data <- read.csv("data/Seed_predation.csv")
+```
+
+# Data Wrangling
+
+## Separate
+
+```{r}
+#separate seed predation data
+colnames(seed_predation_data) #obtain column names to know what to call new columns
+
+#use separate to separate on '.'
+seed_predation_separated <- seed_predation_data %>%
+  separate(col = Lynx.Habitat.Plot.Microhabitat.Code.CAM.Seeds_left0.Seeds_left1.Seeds_predated1.Seeds_left2.Seeds_oredated2.Seeds_left3.Seeds_predated3.Seeds_left4.Seeds_predated4.Seeds_left5.Seeds_predated5.Seeds_predated_total, 
+           into = c("Lynx", "Habitat", "Plot", "Microhabitat", "Code", "CAM", "Seeds_left0", "Seeds_left1", "Seeds_predated1", "Seeds_left2", "Seeds_oredated2", "Seeds_left3", "Seeds_predated3", "Seeds_left4", "Seeds_predated4", "Seeds_left5", "Seeds_predated5", "Seeds_predated_total"), 
+           sep = ";")
+```
+
+## As.Numeric
+
+```{r}
+#make total seeds predated column and seeds left 0 column numeric
+#Seeds_left0 is used as total seeds left out at the beginning (8 seeds)
+
+seed_predation_separated <- seed_predation_separated %>% 
+  mutate(Seeds_predated_total = as.numeric(Seeds_predated_total),
+         Seeds_left0 = as.numeric(Seeds_left0))
+```
+
+## Final Visualization
+
+```{r}
+
+```
+
+# Models
+
+## Additive Model
+
+```{r}
+#Run an addtive model of number of seeds predated ~ Microhabitat + Lynx Presence
+m.seeds.habitat.microhabitat.lynx <-
+brm(data = seed_predation_separated, # Give the model the data
+# Choose a binomial distribution --> There is a set number (8 seeds) and it is success vs. failure
+family = binomial(link = "logit"),
+# Specify the model here.
+Seeds_predated_total | trials(Seeds_left0) ~ 1 + Habitat + Microhabitat + Lynx + (1|Plot), #this last part accounts for natural variation in plots
+# Specify parameters for executing the Markov chains
+iter = 2000, warmup = 1000, chains = 4, cores = 4,
+# Save the model in output folder
+file = "output/m.seeds.habitat.microhabitat.lynx")
+```
+
+```{r}
+#get summary of the additive model
+summary(m.seeds.habitat.microhabitat.lynx)
+```
+
+```{r}
+#check that model ran correctly
+plot(m.seeds.habitat.microhabitat.lynx)
+```
+
+## Interactive Model
+
+```{r}
+# Run an interactive model of number of seeds predated ~ Microhabitat + Lynx Presence
+m.seeds.habitat.microhabitat.lynx.int <-
+brm(data = seed_predation_separated, # Give the model the data
+family = binomial(link = "logit"),
+# Specify the model here.
+Seeds_predated_total | trials(Seeds_left0) ~ 0 + Habitat + Lynx*Microhabitat + (1|Plot),
+# Specify parameters for executing the Markov chains
+iter = 2000, warmup = 1000, chains = 4, cores = 4,
+file = "output/m.seeds.habitat.microhabitat.lynx.int")
+```
+
+```{r}
+#get summary of the interactive model
+summary(m.seeds.habitat.microhabitat.lynx.int)
+```
+
+```{r}
+#check that model ran correctly
+plot(m.seeds.habitat.microhabitat.lynx.int)
+```
+
+There are normal, smooth distributions of the posteriors, the chains are overlapping in a flat trend, and the Rhat values are equal to 1, so the model ran correctly.
+
+# Compare Models
+
+```{r}
+#check PSIS value of additve model
+loo(m.seeds.habitat.microhabitat.lynx)
+```
+
+```{r}
+#check WAIC value of additive model
+waic(m.seeds.habitat.microhabitat.lynx)
+```
+
+```{r}
+#check PSIS value of interactive model
+loo(m.seeds.habitat.microhabitat.lynx.int)
+```
+
+```{r}
+#check WAIC value of interactive model
+waic(m.seeds.habitat.microhabitat.lynx.int)
+```
+
+The additive model is better because it has lower PSIS (731.7) and WAIC (719.9) values compared to the interactive model's PSIS (751.6) and WAIC (739.3) values.
+
+# Backtransform Estimates
+
+```{r}
+# Exponentiate the estimate because we are in the log scale
+
+#Rock microhabitat
+exp(0.94)
+```
+
+```{r}
+#Shrub microhabitat
+exp(2.19)
+```
+
+# Model Interpretation
+
+Because the additive model has lower PSIS and WAIC values than the interactive model, we will use it to interpret our findings. The intercept in the additive model represents a forested macrohabitat type, open microhabitat type, and no lynx present. Macrohabitat does not seem to have a strong effect on seed predation because the 95% confidence interval (-2.16 to 2.48) includes zero, so we can not claim that the slope is reasonably different from 0. Lynx presence also does not seem to have a strong effect on seed predation because the 95% confidence interval (-1.42 to 3.47) includes zero, so we can not claim that the slope is reasonably different from 0. Rock and shrub microhabitats have 95% confidence intervals that do not overlap with 0 (0.46 to 1.44 and 1.71 to 2.72, respectively), so we can conclude that microhabitat has an effect on seed predation success. Seed predation success is 2.56 times higher in rock microhabitats and 8.94 times higher in shrub habitats than in open microhabitats.
+
+From these results, we can conclude that microhabitat type has a stronger, statistically relevant effect on wood mice in Southern Spain than lynx presence or macrohabitat type. One theory as to why lynx presence does not have as strong an impact on seed predation success is that lynx do not directly predate on wood mice. There are mesopredators, who predate on wood mice, that lynx predate on, so by introducing lynx, these mesopredator populations go down and wood mice have more foraging success.
+
+This dataset tells us that microhabitat has more of an influence on wood mice seed predattion than predator presence or macrohabitat type, but more research should be down on the long-term affects of this reintroduction to see if this remains true. This particular dataset was collected over a relatively short period of time, so long-term effects of lynx reintroduction are unknown.
