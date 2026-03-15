@@ -18,6 +18,8 @@ In this instance, the target audience of findings like this would be the stakeho
 
 
 # What is in this folder? 
+## Quarto documents folder
+### This included the rendered Quarto documents in pdf form.
 ## data folder
 ### This includes all the raw data and csv files. 
 ## output folder
